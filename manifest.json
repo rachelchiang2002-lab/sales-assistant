@@ -1,0 +1,18 @@
+{
+  "name": "業務助手",
+  "short_name": "業務助手",
+  "description": "語音輸入 + AI 整理 + IG 素材一鍵分享給客戶",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0f0f1a",
+  "theme_color": "#0f0f1a",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

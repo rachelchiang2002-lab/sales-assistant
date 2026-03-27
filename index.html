@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="theme-color" content="#0f0f1a">
+  <title>業務助手</title>
+  <link rel="manifest" href="manifest.json">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+    :root {
+      --primary: #4f46e5;
+      --primary-light: #818cf8;
+      --bg: #0f0f1a;
+      --surface: #1a1a2e;
+      --surface2: #252540;
+      --text: #e2e8f0;
+      --text-muted: #94a3b8;
+      --border: #334155;
+      --success: #10b981;
+      --danger: #ef4444;
+      --ig: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+    }
+
+    html, body {
+      height: 100%;
+      height: 100dvh;
+      overflow: hidden;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ─── Header ─── */
+    .header {
+      background: var(--surface);
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .header-title { font-size: 18px; font-weight: 700; }
+    .header-title .grad {
+      background: var(--ig);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .icon-btn {
+      background: none; border: none; color: var(--text-muted);
+      font-size: 20px; cursor: pointer; padding: 8px; border-radius: 8px;
+    }
+    .icon-btn:active { background: var(--surface2); }
+
+    /* ─── Main ─── */
+    .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-height: 0; }
+
+    /* ─── IG Section ─── */
+    .section-ig {
+      flex-shrink: 0;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 12px;
+    }
+    .section-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 16px 8px;
+    }
+    .section-label {
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.6px; color: var(--text-muted);
+    }
+    .add-btn {
+      display: flex; align-items: center; gap: 4px;
+      background: var(--surface2); border: 1px solid var(--border);
+      color: var(--text); padding: 6px 14px; border-radius: 20px;
+      font-size: 13px; font-weight: 600; cursor: pointer;
+    }
+    .add-btn:active { opacity: 0.7; }
+
+    /* IG scroll */
+    .ig-scroll {
+      display: flex; gap: 10px; padding: 0 16px;
+      overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none;
+      min-height: 100px; align-items: center;
+    }
+    .ig-scroll::-webkit-scrollbar { display: none; }
+    .ig-empty {
+      color: var(--text-muted); font-size: 12px;
+      white-space: nowrap; padding: 4px 0;
+    }
+
+    /* IG Card */
+    .ig-card {
+      flex-shrink: 0; width: 88px;
+      background: var(--surface2); border: 2px solid var(--border);
+      border-radius: 12px; overflow: hidden; cursor: pointer;
+      transition: transform 0.15s, border-color 0.2s;
+      position: relative;
+    }
+    .ig-card:active { transform: scale(0.93); }
+    .ig-card.inserted { border-color: var(--primary); }
+
+    .ig-thumb {
+      width: 100%; height: 64px;
+      background: var(--ig);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 26px; position: relative;
+    }
+    .ig-type-badge {
+      position: absolute; bottom: 3px; right: 3px;
+      background: rgba(0,0,0,0.65); border-radius: 4px;
+      padding: 1px 5px; font-size: 9px; color: white; font-weight: 600;
+    }
+    .ig-card-name {
+      padding: 4px 6px; font-size: 10px; color: var(--text-muted);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .ig-del {
+      position: absolute; top: 3px; left: 3px;
+      background: rgba(0,0,0,0.75); border: none; color: white;
+      width: 18px; height: 18px; border-radius: 50%; font-size: 10px;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+    }
+
+    /* ─── Voice Section ─── */
+    .section-voice {
+      flex: 1; min-height: 0;
+      display: flex; flex-direction: column; gap: 10px; padding: 14px 16px;
+      overflow: hidden;
+    }
+
+    .voice-row {
+      display: flex; flex-direction: column; align-items: center; gap: 6px;
+      flex-shrink: 0;
+    }
+    .voice-btn {
+      width: 68px; height: 68px; border-radius: 50%; border: none;
+      background: var(--primary); color: white; font-size: 26px;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 20px rgba(79,70,229,0.45);
+      transition: background 0.2s, box-shadow 0.2s;
+    }
+    .voice-btn.recording {
+      background: var(--danger);
+      box-shadow: 0 4px 24px rgba(239,68,68,0.6);
+      animation: pulse 1.1s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%,100% { transform: scale(1); }
+      50% { transform: scale(1.09); }
+    }
+    .voice-hint { font-size: 11px; color: var(--text-muted); }
+
+    /* Transcript */
+    .transcript {
+      flex-shrink: 0;
+      background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+      padding: 10px 12px; font-size: 13px; color: var(--text-muted);
+      min-height: 52px; max-height: 72px; overflow-y: auto; line-height: 1.55;
+    }
+    .transcript.active { color: var(--text); }
+
+    /* Process button */
+    .process-btn {
+      flex-shrink: 0;
+      background: var(--primary); color: white; border: none; border-radius: 12px;
+      padding: 11px; font-size: 14px; font-weight: 700; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+    }
+    .process-btn:active { opacity: 0.85; }
+    .process-btn:disabled { background: var(--surface2); color: var(--text-muted); cursor: not-allowed; }
+
+    /* Output */
+    .output-wrap {
+      flex: 1; min-height: 0;
+      display: flex; flex-direction: column; gap: 6px;
+    }
+    .output-label {
+      flex-shrink: 0;
+      font-size: 10px; font-weight: 700; color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: 0.6px;
+    }
+    .output-box {
+      flex: 1; min-height: 0; overflow-y: auto;
+      background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+      padding: 12px; font-size: 14px; line-height: 1.75;
+      white-space: pre-wrap; word-break: break-word;
+    }
+    .output-box.empty { color: var(--text-muted); font-style: italic; font-size: 13px; }
+
+    /* Action row */
+    .action-row { flex-shrink: 0; display: flex; gap: 8px; }
+    .act-btn {
+      flex: 1; padding: 12px; border: none; border-radius: 12px;
+      font-size: 13px; font-weight: 700; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 5px;
+    }
+    .act-btn:active { transform: scale(0.97); }
+    .act-btn.copy { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+    .act-btn.share { background: var(--success); color: white; }
+    .act-btn:disabled { opacity: 0.38; cursor: not-allowed; }
+
+    /* ─── Bottom Sheet ─── */
+    .overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.72);
+      z-index: 100; display: flex; align-items: flex-end;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.3s;
+    }
+    .overlay.open { opacity: 1; pointer-events: all; }
+
+    .sheet {
+      width: 100%; background: var(--surface);
+      border-radius: 20px 20px 0 0;
+      padding: 0 16px 36px;
+      transform: translateY(100%);
+      transition: transform 0.32s cubic-bezier(.4,0,.2,1);
+      max-height: 88dvh; overflow-y: auto;
+    }
+    .overlay.open .sheet { transform: translateY(0); }
+    .sheet-handle {
+      width: 36px; height: 4px; background: var(--border);
+      border-radius: 2px; margin: 12px auto 16px;
+    }
+    .sheet-title { font-size: 16px; font-weight: 700; margin-bottom: 16px; }
+
+    /* ─── Settings Modal ─── */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.78);
+      z-index: 200; display: flex; align-items: center; justify-content: center;
+      padding: 20px; opacity: 0; pointer-events: none; transition: opacity 0.2s;
+    }
+    .modal-overlay.open { opacity: 1; pointer-events: all; }
+    .modal {
+      background: var(--surface); border-radius: 16px; padding: 20px;
+      width: 100%; max-width: 360px;
+      transform: scale(0.92); transition: transform 0.2s;
+    }
+    .modal-overlay.open .modal { transform: scale(1); }
+    .modal-title { font-size: 16px; font-weight: 700; margin-bottom: 14px; }
+    .modal-footer { display: flex; gap: 8px; margin-top: 14px; }
+    .m-btn { flex: 1; padding: 12px; border-radius: 10px; border: none; font-size: 14px; font-weight: 700; cursor: pointer; }
+    .m-btn.cancel { background: var(--surface2); color: var(--text); }
+    .m-btn.save { background: var(--primary); color: white; }
+
+    /* Form */
+    .field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 12px; }
+    .field-label { font-size: 12px; color: var(--text-muted); font-weight: 600; }
+    .f-input {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 10px; padding: 11px 12px; color: var(--text); font-size: 14px; width: 100%; outline: none;
+    }
+    .f-input:focus { border-color: var(--primary); }
+    .f-input::placeholder { color: var(--text-muted); }
+
+    .paste-row { display: flex; gap: 8px; }
+    .paste-row .f-input { flex: 1; }
+    .paste-btn {
+      background: var(--surface2); border: 1px solid var(--border); color: var(--text);
+      border-radius: 10px; padding: 0 14px; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap;
+    }
+    .paste-btn:active { opacity: 0.7; }
+
+    .submit-btn {
+      width: 100%; padding: 13px; background: var(--primary); color: white;
+      border: none; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; margin-top: 4px;
+    }
+    .submit-btn:active { opacity: 0.85; }
+
+    /* ─── Quick Add Banner ─── */
+    .quick-banner {
+      margin: 0 16px 8px;
+      background: linear-gradient(135deg, rgba(79,70,229,0.15), rgba(188,24,136,0.15));
+      border: 1px solid rgba(129,140,248,0.4);
+      border-radius: 12px; padding: 10px 12px;
+      display: none; align-items: center; gap: 10px;
+      animation: slideIn 0.25s ease;
+    }
+    .quick-banner.show { display: flex; }
+    @keyframes slideIn { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:translateY(0); } }
+    .quick-banner-icon { font-size: 20px; flex-shrink: 0; }
+    .quick-banner-info { flex: 1; min-width: 0; }
+    .quick-banner-title { font-size: 12px; font-weight: 700; color: var(--primary-light); }
+    .quick-banner-url {
+      font-size: 11px; color: var(--text-muted);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 1px;
+    }
+    .quick-banner-add {
+      background: var(--primary); color: white; border: none;
+      border-radius: 8px; padding: 6px 14px; font-size: 13px; font-weight: 700;
+      cursor: pointer; flex-shrink: 0;
+    }
+    .quick-banner-add:active { opacity: 0.8; }
+    .quick-banner-dismiss {
+      background: none; border: none; color: var(--text-muted);
+      font-size: 14px; cursor: pointer; padding: 4px; flex-shrink: 0;
+    }
+
+    /* ─── API Test button ─── */
+    .test-btn {
+      width: 100%; padding: 10px; margin-top: -4px; margin-bottom: 4px;
+      background: var(--surface2); border: 1px solid var(--border);
+      color: var(--text-muted); border-radius: 10px;
+      font-size: 13px; font-weight: 600; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+    }
+    .test-btn:active { opacity: 0.7; }
+    .test-btn.ok  { color: var(--success); border-color: var(--success); }
+    .test-btn.err { color: var(--danger);  border-color: var(--danger); }
+
+    /* Toast */
+    .toast {
+      position: fixed; bottom: 88px; left: 50%;
+      transform: translateX(-50%) translateY(16px);
+      background: rgba(25,25,45,0.97); color: white;
+      padding: 9px 20px; border-radius: 20px; font-size: 13px;
+      opacity: 0; transition: all 0.28s; z-index: 999;
+      white-space: nowrap; border: 1px solid var(--border);
+      pointer-events: none;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    .spinner {
+      width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: white; border-radius: 50%;
+      animation: spin 0.65s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="header">
+  <div class="header-title">業務<span class="grad">助手</span></div>
+  <button class="icon-btn" onclick="openSettings()">⚙️</button>
+</header>
+
+<main class="main">
+
+  <!-- IG Section -->
+  <section class="section-ig">
+    <div class="section-header">
+      <span class="section-label">📸 IG 素材庫</span>
+      <button class="add-btn" onclick="openAddIG()">＋ 加入貼文</button>
+    </div>
+    <!-- 剪貼簿快速加入橫幅 -->
+    <div class="quick-banner" id="quickBanner">
+      <div class="quick-banner-icon">📋</div>
+      <div class="quick-banner-info">
+        <div class="quick-banner-title">偵測到 IG 連結，要加入嗎？</div>
+        <div class="quick-banner-url" id="quickBannerUrl"></div>
+      </div>
+      <button class="quick-banner-add" onclick="confirmQuickAdd()">加入</button>
+      <button class="quick-banner-dismiss" onclick="dismissQuickAdd()">✕</button>
+    </div>
+
+    <div class="ig-scroll" id="igScroll">
+      <span class="ig-empty" id="igEmpty">尚未加入任何 IG 貼文</span>
+    </div>
+  </section>
+
+  <!-- Voice Section -->
+  <section class="section-voice">
+    <div class="voice-row">
+      <button class="voice-btn" id="voiceBtn" onclick="toggleVoice()">🎤</button>
+      <div class="voice-hint" id="voiceHint">點擊開始語音輸入</div>
+    </div>
+
+    <div class="transcript" id="transcript">語音內容會出現在這裡（長按清除）...</div>
+
+    <button class="process-btn" id="processBtn" onclick="processAI()" disabled>
+      ✨ AI 整理成訊息
+    </button>
+
+    <div class="output-wrap">
+      <div class="output-label">整理後的訊息 <span id="insertHint" style="display:none;color:var(--primary-light)">— 點擊上方 IG 卡片可插入連結</span></div>
+      <div class="output-box empty" id="outputBox">AI 整理後的內容會出現在這裡...</div>
+    </div>
+
+    <div class="action-row">
+      <button class="act-btn copy" id="copyBtn" onclick="copyOutput()" disabled>📋 複製</button>
+      <button class="act-btn share" id="shareBtn" onclick="shareOutput()" disabled>📤 分享給客戶</button>
+    </div>
+  </section>
+
+</main>
+
+<!-- Add IG Sheet -->
+<div class="overlay" id="igOverlay" onclick="overlayTap(event,'igOverlay')">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">📸 加入 IG 貼文</div>
+    <div class="field">
+      <div class="field-label">IG 貼文 / 影片網址</div>
+      <div class="paste-row">
+        <input type="url" class="f-input" id="igUrl" placeholder="https://www.instagram.com/p/..." />
+        <button class="paste-btn" onclick="pasteClip('igUrl')">📋 貼上</button>
+      </div>
+    </div>
+    <div class="field">
+      <div class="field-label">備注名稱（選填）</div>
+      <input type="text" class="f-input" id="igLabel" placeholder="例：最新商品、活動影片..." />
+    </div>
+    <button class="submit-btn" onclick="addCard()">加入素材庫</button>
+  </div>
+</div>
+
+<!-- Settings Modal -->
+<div class="modal-overlay" id="settingsModal" onclick="modalTap(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-title">⚙️ 設定</div>
+    <div class="field">
+      <div class="field-label">Google Gemini API Key *</div>
+      <input type="password" class="f-input" id="cfgKey" placeholder="AIza..." autocomplete="off" />
+    </div>
+    <button class="test-btn" id="testBtn" onclick="testAPI()">🔌 測試 API 連線</button>
+    <div class="field">
+      <div class="field-label">公司 / 品牌名稱（選填）</div>
+      <input type="text" class="f-input" id="cfgBrand" placeholder="例：ABC 精品" />
+    </div>
+    <div class="field">
+      <div class="field-label">IG 帳號（選填）</div>
+      <input type="text" class="f-input" id="cfgIG" placeholder="@your_account" />
+    </div>
+    <div class="modal-footer">
+      <button class="m-btn cancel" onclick="closeSettings()">取消</button>
+      <button class="m-btn save" onclick="saveSettings()">儲存</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════
+let igCards  = JSON.parse(localStorage.getItem('igCards')   || '[]');
+let cfg      = JSON.parse(localStorage.getItem('cfg')       || '{}');
+let transcript = '';
+let aiOutput   = '';
+let isRecording = false;
+let recognition = null;
+
+// ══════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════
+let quickUrl = '';
+
+document.addEventListener('DOMContentLoaded', () => {
+  renderCards();
+  initVoice();
+  if (!cfg.apiKey) setTimeout(openSettings, 400);
+
+  // Long-press transcript to clear
+  const tEl = document.getElementById('transcript');
+  let pressTimer;
+  tEl.addEventListener('touchstart', () => {
+    pressTimer = setTimeout(() => {
+      if (!transcript) return;
+      transcript = '';
+      setTranscript('', false);
+      document.getElementById('processBtn').disabled = true;
+      toast('已清除語音內容');
+    }, 800);
+  }, { passive: true });
+  tEl.addEventListener('touchend',   () => clearTimeout(pressTimer), { passive: true });
+  tEl.addEventListener('touchmove',  () => clearTimeout(pressTimer), { passive: true });
+
+  // 切回 App 時自動偵測剪貼簿 IG 連結
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') checkClipboardForIG();
+  });
+});
+
+// ══════════════════════════════════════════
+//  CLIPBOARD QUICK ADD
+// ══════════════════════════════════════════
+async function checkClipboardForIG() {
+  try {
+    const text = await navigator.clipboard.readText();
+    if (text && text.includes('instagram.com') && text !== quickUrl) {
+      quickUrl = text.trim();
+      document.getElementById('quickBannerUrl').textContent = quickUrl.replace('https://www.instagram.com/', 'instagram.com/');
+      document.getElementById('quickBanner').classList.add('show');
+    }
+  } catch(_) {} // clipboard permission not granted, silent fail
+}
+
+function confirmQuickAdd() {
+  if (!quickUrl) return;
+  // Check for duplicate
+  if (igCards.some(c => c.url === quickUrl)) {
+    toast('此貼文已在素材庫中');
+    dismissQuickAdd();
+    return;
+  }
+  igCards.push({ url: quickUrl, label: '' });
+  localStorage.setItem('igCards', JSON.stringify(igCards));
+  renderCards();
+  dismissQuickAdd();
+  toast('✅ IG 貼文已加入素材庫');
+}
+
+function dismissQuickAdd() {
+  document.getElementById('quickBanner').classList.remove('show');
+  quickUrl = '';
+}
+
+// ══════════════════════════════════════════
+//  VOICE
+// ══════════════════════════════════════════
+function initVoice() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) {
+    document.getElementById('voiceHint').textContent = '此瀏覽器不支援語音（請用 Chrome / Safari）';
+    document.getElementById('voiceBtn').disabled = true;
+    return;
+  }
+  recognition = new SR();
+  recognition.lang = 'zh-TW';
+  recognition.continuous = true;
+  recognition.interimResults = true;
+
+  let base = '';
+
+  recognition.onstart = () => {
+    base = transcript;
+    document.getElementById('voiceBtn').classList.add('recording');
+    document.getElementById('voiceBtn').textContent = '⏹️';
+    document.getElementById('voiceHint').textContent = '錄音中… 點擊停止';
+  };
+
+  recognition.onresult = e => {
+    let fin = '', interim = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      if (e.results[i].isFinal) fin += e.results[i][0].transcript;
+      else                       interim += e.results[i][0].transcript;
+    }
+    if (fin) base += fin;
+    const full = base + (interim ? `[${interim}]` : '');
+    setTranscript(full, !!full);
+    if (base.trim()) transcript = base;
+  };
+
+  recognition.onerror = e => {
+    if (e.error === 'not-allowed') toast('請允許麥克風權限');
+    stopVoice();
+  };
+
+  recognition.onend = () => {
+    if (isRecording) {
+      try { recognition.start(); } catch(_) { stopVoice(); }
+    }
+  };
+}
+
+function toggleVoice() {
+  isRecording ? stopVoice() : startVoice();
+}
+
+function startVoice() {
+  if (!recognition) return;
+  isRecording = true;
+  try { recognition.start(); } catch(e) { isRecording = false; }
+}
+
+function stopVoice() {
+  isRecording = false;
+  try { recognition && recognition.stop(); } catch(_) {}
+  document.getElementById('voiceBtn').classList.remove('recording');
+  document.getElementById('voiceBtn').textContent = '🎤';
+  document.getElementById('voiceHint').textContent = '點擊開始語音輸入';
+  if (transcript.trim()) document.getElementById('processBtn').disabled = false;
+}
+
+function setTranscript(text, active) {
+  const el = document.getElementById('transcript');
+  el.textContent = text || '語音內容會出現在這裡（長按清除）...';
+  el.classList.toggle('active', active);
+}
+
+// ══════════════════════════════════════════
+//  AI PROCESSING
+// ══════════════════════════════════════════
+async function processAI() {
+  if (!transcript.trim()) { toast('請先語音輸入內容'); return; }
+  if (!cfg.apiKey) { toast('請先在設定填入 Gemini API Key'); openSettings(); return; }
+
+  const btn = document.getElementById('processBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div>&nbsp;AI 整理中…';
+
+  const brandLine = cfg.brand ? `公司：${cfg.brand}` : '';
+  const igLine    = cfg.ig    ? `IG：${cfg.ig}` : '';
+
+  const prompt = `你是業務溝通助手。${brandLine} ${igLine}
+請把以下口語大綱整理成一段流暢的客戶訊息：
+- 語氣親切專業
+- 重點突出，不冗長
+- 適合直接傳給客戶
+- 繁體中文，段落清楚
+
+口語內容：
+${transcript}
+
+直接輸出訊息內容，不要加說明或前言。`;
+
+  try {
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${cfg.apiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { temperature: 0.7, maxOutputTokens: 512 }
+        })
+      }
+    );
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error?.message || `HTTP ${res.status}`);
+    }
+    const data = await res.json();
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    if (text) {
+      setOutput(text);
+      document.getElementById('insertHint').style.display = 'inline';
+      toast('✅ 整理完成！可點 IG 卡片插入連結');
+    } else {
+      toast('AI 回應為空，請重試');
+    }
+  } catch(e) {
+    toast(`錯誤：${e.message}`);
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = '✨ AI 整理成訊息';
+}
+
+function setOutput(text) {
+  aiOutput = text;
+  const el = document.getElementById('outputBox');
+  el.textContent = text;
+  el.classList.remove('empty');
+  document.getElementById('copyBtn').disabled  = false;
+  document.getElementById('shareBtn').disabled = false;
+}
+
+// ══════════════════════════════════════════
+//  IG CARDS
+// ══════════════════════════════════════════
+function renderCards() {
+  const scroll = document.getElementById('igScroll');
+  const empty  = document.getElementById('igEmpty');
+  scroll.querySelectorAll('.ig-card').forEach(c => c.remove());
+
+  if (!igCards.length) { empty.style.display = 'inline'; return; }
+  empty.style.display = 'none';
+
+  igCards.forEach((card, idx) => {
+    const isReel = card.url.includes('/reel/');
+    const isTV   = card.url.includes('/tv/');
+    const icon   = isReel ? '🎬' : isTV ? '📺' : '📸';
+    const badge  = isReel ? 'Reel' : isTV ? 'IGTV' : 'Post';
+
+    const el = document.createElement('div');
+    el.className = 'ig-card';
+    el.dataset.idx = idx;
+    el.innerHTML = `
+      <div class="ig-thumb">
+        ${icon}
+        <span class="ig-type-badge">${badge}</span>
+      </div>
+      <div class="ig-card-name">${card.label || shortId(card.url)}</div>
+      <button class="ig-del" onclick="delCard(event,${idx})">✕</button>
+    `;
+    el.addEventListener('click', () => insertLink(idx));
+    scroll.insertBefore(el, empty);
+  });
+}
+
+function shortId(url) {
+  const m = url.match(/\/(p|reel|tv)\/([A-Za-z0-9_-]+)/);
+  return m ? m[2].slice(0, 9) + '…' : 'IG 貼文';
+}
+
+function openAddIG() {
+  document.getElementById('igUrl').value   = '';
+  document.getElementById('igLabel').value = '';
+  document.getElementById('igOverlay').classList.add('open');
+  // auto-read clipboard
+  setTimeout(() => {
+    navigator.clipboard?.readText?.().then(t => {
+      if (t?.includes('instagram.com')) document.getElementById('igUrl').value = t.trim();
+    }).catch(() => {});
+  }, 250);
+}
+
+function closeAddIG() {
+  document.getElementById('igOverlay').classList.remove('open');
+}
+
+function overlayTap(e, id) {
+  if (e.target.id === id) closeAddIG();
+}
+
+async function pasteClip(id) {
+  try {
+    const t = await navigator.clipboard.readText();
+    document.getElementById(id).value = t.trim();
+  } catch(_) {
+    toast('請手動長按貼上');
+  }
+}
+
+function addCard() {
+  const url   = document.getElementById('igUrl').value.trim();
+  const label = document.getElementById('igLabel').value.trim();
+  if (!url)                      { toast('請輸入 IG 網址'); return; }
+  if (!url.includes('instagram.com')) { toast('請輸入有效的 Instagram 網址'); return; }
+  igCards.push({ url, label });
+  localStorage.setItem('igCards', JSON.stringify(igCards));
+  renderCards();
+  closeAddIG();
+  toast('✅ IG 貼文已加入');
+}
+
+function delCard(e, idx) {
+  e.stopPropagation();
+  igCards.splice(idx, 1);
+  localStorage.setItem('igCards', JSON.stringify(igCards));
+  renderCards();
+}
+
+function insertLink(idx) {
+  const card = igCards[idx];
+  if (!card) return;
+
+  if (!aiOutput) {
+    toast('請先用 AI 整理內容，再插入連結');
+    return;
+  }
+
+  const name = card.label || shortId(card.url);
+  aiOutput += `\n\n📸 ${name}：${card.url}`;
+  setOutput(aiOutput);
+
+  document.querySelectorAll('.ig-card').forEach(c => {
+    if (parseInt(c.dataset.idx) === idx) c.classList.add('inserted');
+  });
+
+  const out = document.getElementById('outputBox');
+  out.scrollTop = out.scrollHeight;
+  toast(`已插入「${name}」連結`);
+}
+
+// ══════════════════════════════════════════
+//  COPY & SHARE
+// ══════════════════════════════════════════
+async function copyOutput() {
+  if (!aiOutput) return;
+  try {
+    await navigator.clipboard.writeText(aiOutput);
+    toast('✅ 已複製到剪貼簿');
+  } catch(_) {
+    // fallback
+    const el = Object.assign(document.createElement('textarea'), { value: aiOutput });
+    document.body.appendChild(el); el.select();
+    document.execCommand('copy'); document.body.removeChild(el);
+    toast('✅ 已複製到剪貼簿');
+  }
+}
+
+async function shareOutput() {
+  if (!aiOutput) return;
+  if (navigator.share) {
+    try { await navigator.share({ text: aiOutput, title: '業務訊息' }); return; }
+    catch(e) { if (e.name === 'AbortError') return; }
+  }
+  await copyOutput();
+  toast('已複製，請貼到 LINE / WhatsApp');
+}
+
+// ══════════════════════════════════════════
+//  SETTINGS
+// ══════════════════════════════════════════
+function openSettings() {
+  document.getElementById('cfgKey').value   = cfg.apiKey || '';
+  document.getElementById('cfgBrand').value = cfg.brand  || '';
+  document.getElementById('cfgIG').value    = cfg.ig     || '';
+  document.getElementById('settingsModal').classList.add('open');
+}
+
+function closeSettings() {
+  document.getElementById('settingsModal').classList.remove('open');
+}
+
+function modalTap(e) {
+  if (e.target.id === 'settingsModal') closeSettings();
+}
+
+function saveSettings() {
+  cfg.apiKey = document.getElementById('cfgKey').value.trim();
+  cfg.brand  = document.getElementById('cfgBrand').value.trim();
+  cfg.ig     = document.getElementById('cfgIG').value.trim();
+  localStorage.setItem('cfg', JSON.stringify(cfg));
+  // Reset test button
+  const tb = document.getElementById('testBtn');
+  tb.className = 'test-btn';
+  tb.textContent = '🔌 測試 API 連線';
+  closeSettings();
+  toast('✅ 設定已儲存');
+}
+
+// ══════════════════════════════════════════
+//  API TEST
+// ══════════════════════════════════════════
+async function testAPI() {
+  const key = document.getElementById('cfgKey').value.trim();
+  if (!key) { toast('請先輸入 API Key'); return; }
+
+  const btn = document.getElementById('testBtn');
+  btn.className = 'test-btn';
+  btn.innerHTML = '<div class="spinner" style="border-top-color:var(--text-muted)"></div>&nbsp;連線測試中…';
+  btn.disabled = true;
+
+  try {
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: '回覆「OK」兩個字' }] }],
+          generationConfig: { maxOutputTokens: 10 }
+        })
+      }
+    );
+    if (res.ok) {
+      btn.className = 'test-btn ok';
+      btn.innerHTML = '✅ 連線成功！API Key 有效';
+    } else {
+      const err = await res.json();
+      const msg = err.error?.message || `HTTP ${res.status}`;
+      btn.className = 'test-btn err';
+      btn.innerHTML = `❌ ${msg.slice(0, 40)}`;
+    }
+  } catch(e) {
+    btn.className = 'test-btn err';
+    btn.innerHTML = '❌ 網路錯誤，請確認連線';
+  }
+  btn.disabled = false;
+}
+
+// ══════════════════════════════════════════
+//  TOAST
+// ══════════════════════════════════════════
+let toastTimer;
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2600);
+}
+
+// ══════════════════════════════════════════
+//  SERVICE WORKER
+// ══════════════════════════════════════════
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').catch(() => {});
+}
+</script>
+</body>
+</html>
